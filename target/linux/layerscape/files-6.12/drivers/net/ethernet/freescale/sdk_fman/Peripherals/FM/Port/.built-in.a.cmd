@@ -1,0 +1,1 @@
+savedcmd_drivers/net/ethernet/freescale/sdk_fman/Peripherals/FM/Port/built-in.a := rm -f drivers/net/ethernet/freescale/sdk_fman/Peripherals/FM/Port/built-in.a;  printf "drivers/net/ethernet/freescale/sdk_fman/Peripherals/FM/Port/%s " fm_port.o fm_port_im.o fman_port.o | xargs aarch64-linux-gnu-ar cDPrST drivers/net/ethernet/freescale/sdk_fman/Peripherals/FM/Port/built-in.a

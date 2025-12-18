@@ -1,0 +1,29 @@
+!<thin>
+//                                              196       `
+dpa_alloc.o/
+qbman_driver.o/
+bman_high.o/
+bman_config.o/
+bman_driver.o/
+bman_debugfs.o/
+qman_high.o/
+qman_utility.o/
+qman_config.o/
+qman_driver.o/
+qman_debugfs.o/
+fsl_usdpaa.o/
+fsl_usdpaa_irq.o/
+
+/0              0           0     0     644     70624     `
+/13             0           0     0     644     14520     `
+/29             0           0     0     644     141872    `
+/42             0           0     0     644     60216     `
+/57             0           0     0     644     87832     `
+/72             0           0     0     644     21296     `
+/88             0           0     0     644     608552    `
+/101            0           0     0     644     29128     `
+/117            0           0     0     644     90376     `
+/132            0           0     0     644     107376    `
+/147            0           0     0     644     107856    `
+/163            0           0     0     644     238336    `
+/177            0           0     0     644     53000     `

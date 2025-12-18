@@ -1,0 +1,229 @@
+From 9c62985436b42b0b959e2f52a252085edb4d0cf9 Mon Sep 17 00:00:00 2001
+From: mycode <li_cloud6630@qq.com>
+Date: Wed, 17 Dec 2025 16:20:06 +0000
+Subject: [PATCH 2/2] add drivers
+
+---
+ arch/arm64/include/asm/io.h                   |    4 +-
+ arch/arm64/include/asm/pgtable-prot.h         |    1 +
+ arch/arm64/include/asm/pgtable.h              |    7 +-
+ drivers/net/phy/phylink.c                     |    3 +-
+ drivers/soc/fsl/dpio/dpio-driver.c            |   12 +-
+ drivers/vfio/fsl-mc/vfio_fsl_mc.c             |    8 +-
+ include/linux/fsl_ifc.h                       |    5 +
+ include/linux/phylink.h                       |    1 +
+ include/linux/skbuff.h                        |    1 +
+ net/core/skbuff.c                             |   26 +
+ 0 files changed, 10543 insertions(+), 1063 deletions(-)
+
+diff --git a/arch/arm64/include/asm/io.h b/arch/arm64/include/asm/io.h
+index 1ada23a6e..371a3e5ba 100644
+--- a/arch/arm64/include/asm/io.h
++++ b/arch/arm64/include/asm/io.h
+@@ -283,7 +283,9 @@ int arm64_ioremap_prot_hook_register(const ioremap_prot_hook_t hook);
+ 	ioremap_prot((addr), (size), PROT_NORMAL_NC)
+ #define ioremap_np(addr, size)	\
+ 	ioremap_prot((addr), (size), PROT_DEVICE_nGnRnE)
+-
++#define ioremap_cache_ns(addr, size)  \
++	ioremap_prot((addr), (size), PROT_NORMAL_NS)
++	
+ /*
+  * io{read,write}{16,32,64}be() macros
+  */
+diff --git a/arch/arm64/include/asm/pgtable-prot.h b/arch/arm64/include/asm/pgtable-prot.h
+index 3ce7c632f..3c01696bc 100644
+--- a/arch/arm64/include/asm/pgtable-prot.h
++++ b/arch/arm64/include/asm/pgtable-prot.h
+@@ -44,6 +44,7 @@
+ #define PROT_DEVICE_nGnRE	(PROT_DEFAULT | PTE_PXN | PTE_UXN | PTE_WRITE | PTE_ATTRINDX(MT_DEVICE_nGnRE))
+ #define PROT_NORMAL_NC		(PROT_DEFAULT | PTE_PXN | PTE_UXN | PTE_WRITE | PTE_ATTRINDX(MT_NORMAL_NC))
+ #define PROT_NORMAL		(PROT_DEFAULT | PTE_PXN | PTE_UXN | PTE_WRITE | PTE_ATTRINDX(MT_NORMAL))
++#define PROT_NORMAL_NS		(PTE_TYPE_PAGE | PTE_AF | PTE_PXN | PTE_UXN | PTE_DIRTY | PTE_WRITE | PTE_ATTRINDX(MT_NORMAL))
+ #define PROT_NORMAL_TAGGED	(PROT_DEFAULT | PTE_PXN | PTE_UXN | PTE_WRITE | PTE_ATTRINDX(MT_NORMAL_TAGGED))
+ 
+ #define PROT_SECT_DEVICE_nGnRE	(PROT_SECT_DEFAULT | PMD_SECT_PXN | PMD_SECT_UXN | PMD_ATTRINDX(MT_DEVICE_nGnRE))
+diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+index eb57ddb5e..2c95680f8 100644
+--- a/arch/arm64/include/asm/pgtable.h
++++ b/arch/arm64/include/asm/pgtable.h
+@@ -680,7 +680,12 @@ static inline void set_pud_at(struct mm_struct *mm, unsigned long addr,
+ 	__pgprot_modify(prot, PTE_ATTRINDX_MASK, PTE_ATTRINDX(MT_DEVICE_nGnRnE) | PTE_PXN | PTE_UXN)
+ #define pgprot_writecombine(prot) \
+ 	__pgprot_modify(prot, PTE_ATTRINDX_MASK, PTE_ATTRINDX(MT_NORMAL_NC) | PTE_PXN | PTE_UXN)
+-#define pgprot_device(prot) \
++#define pgprot_cached(prot) \
++	__pgprot_modify(prot, PTE_ATTRINDX_MASK, PTE_ATTRINDX(MT_NORMAL) | \
++			PTE_PXN | PTE_UXN)
++#define pgprot_cached_ns(prot) \
++	__pgprot(pgprot_val(pgprot_cached(prot)) ^ PTE_SHARED)
++	#define pgprot_device(prot) \
+ 	__pgprot_modify(prot, PTE_ATTRINDX_MASK, PTE_ATTRINDX(MT_DEVICE_nGnRE) | PTE_PXN | PTE_UXN)
+ #define pgprot_tagged(prot) \
+ 	__pgprot_modify(prot, PTE_ATTRINDX_MASK, PTE_ATTRINDX(MT_NORMAL_TAGGED))
+diff --git a/drivers/net/phy/phylink.c b/drivers/net/phy/phylink.c
+index ec3ad23bd..b9123d158 100644
+--- a/drivers/net/phy/phylink.c
++++ b/drivers/net/phy/phylink.c
+@@ -222,7 +222,7 @@ static unsigned int phylink_interface_signal_rate(phy_interface_t interface)
+  *
+  * Return: The maximum speed of @interface
+  */
+-static int phylink_interface_max_speed(phy_interface_t interface)
++int phylink_interface_max_speed(phy_interface_t interface)
+ {
+ 	switch (interface) {
+ 	case PHY_INTERFACE_MODE_100BASEX:
+@@ -283,6 +283,7 @@ static int phylink_interface_max_speed(phy_interface_t interface)
+ 	WARN_ON_ONCE(1);
+ 	return SPEED_UNKNOWN;
+ }
++EXPORT_SYMBOL_GPL(phylink_interface_max_speed);
+ 
+ /**
+  * phylink_caps_to_linkmodes() - Convert capabilities to ethtool link modes
+diff --git a/drivers/soc/fsl/dpio/dpio-driver.c b/drivers/soc/fsl/dpio/dpio-driver.c
+index 9e3fddd8f..205a03d89 100644
+--- a/drivers/soc/fsl/dpio/dpio-driver.c
++++ b/drivers/soc/fsl/dpio/dpio-driver.c
+@@ -26,6 +26,11 @@ MODULE_LICENSE("Dual BSD/GPL");
+ MODULE_AUTHOR("Freescale Semiconductor, Inc");
+ MODULE_DESCRIPTION("DPIO Driver");
+ 
++#define PROT_NORMAL_NS		(PTE_TYPE_PAGE | PTE_AF | PTE_PXN | PTE_UXN | PTE_DIRTY | PTE_WRITE | PTE_ATTRINDX(MT_NORMAL))
++
++#define ioremap_cache_ns(addr, size)	ioremap_prot((addr), (size), PROT_NORMAL_NS)
++
++
+ struct dpio_priv {
+ 	struct dpaa2_io *io;
+ };
+@@ -201,9 +206,8 @@ static int dpaa2_dpio_probe(struct fsl_mc_device *dpio_dev)
+ 		 * portal to avoid coherency issues if a user migrates to
+ 		 * another core.
+ 		 */
+-		desc.regs_cena = devm_memremap(dev, dpio_dev->regions[1].start,
+-					resource_size(&dpio_dev->regions[1]),
+-					MEMREMAP_WC);
++		desc.regs_cena = ioremap_cache_ns(dpio_dev->regions[0].start,
++						resource_size(&dpio_dev->regions[0]));
+ 	} else {
+ 		desc.regs_cena = devm_memremap(dev, dpio_dev->regions[2].start,
+ 					resource_size(&dpio_dev->regions[2]),
+@@ -211,7 +215,7 @@ static int dpaa2_dpio_probe(struct fsl_mc_device *dpio_dev)
+ 	}
+ 
+ 	if (IS_ERR(desc.regs_cena)) {
+-		dev_err(dev, "devm_memremap failed\n");
++		dev_err(dev, "ioremap_cache_ns failed\n");
+ 		err = PTR_ERR(desc.regs_cena);
+ 		goto err_allocate_irqs;
+ 	}
+diff --git a/drivers/vfio/fsl-mc/vfio_fsl_mc.c b/drivers/vfio/fsl-mc/vfio_fsl_mc.c
+index f65d91c01..88b8d5811 100644
+--- a/drivers/vfio/fsl-mc/vfio_fsl_mc.c
++++ b/drivers/vfio/fsl-mc/vfio_fsl_mc.c
+@@ -361,7 +361,6 @@ static int vfio_fsl_mc_mmap_mmio(struct vfio_fsl_mc_region region,
+ {
+ 	u64 size = vma->vm_end - vma->vm_start;
+ 	u64 pgoff, base;
+-	u8 region_cacheable;
+ 
+ 	pgoff = vma->vm_pgoff &
+ 		((1U << (VFIO_FSL_MC_OFFSET_SHIFT - PAGE_SHIFT)) - 1);
+@@ -370,9 +369,10 @@ static int vfio_fsl_mc_mmap_mmio(struct vfio_fsl_mc_region region,
+ 	if (region.size < PAGE_SIZE || base + size > region.size)
+ 		return -EINVAL;
+ 
+-	region_cacheable = (region.type & FSL_MC_REGION_CACHEABLE) &&
+-			   (region.type & FSL_MC_REGION_SHAREABLE);
+-	if (!region_cacheable)
++		if (region.type & FSL_MC_REGION_CACHEABLE) {
++		if (!(region.type & FSL_MC_REGION_SHAREABLE))
++			vma->vm_page_prot = pgprot_cached_ns(vma->vm_page_prot);
++	} else
+ 		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 
+ 	vma->vm_pgoff = (region.addr >> PAGE_SHIFT) + pgoff;
+
+diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
+index 0af96a45e..d8c1908c6 100644
+--- a/include/linux/fsl_ifc.h
++++ b/include/linux/fsl_ifc.h
+@@ -846,6 +846,11 @@ struct fsl_ifc_ctrl {
+ 	u32 nand_stat;
+ 	wait_queue_head_t nand_wait;
+ 	bool little_endian;
++#ifdef CONFIG_PM_SLEEP
++	/*save regs when system goes to deep sleep*/
++	struct fsl_ifc_global		*saved_gregs;
++	struct fsl_ifc_runtime		*saved_rregs;
++#endif
+ };
+ 
+ extern struct fsl_ifc_ctrl *fsl_ifc_ctrl_dev;
+diff --git a/include/linux/phylink.h b/include/linux/phylink.h
+index 5462cc6a3..19f3db6d1 100644
+--- a/include/linux/phylink.h
++++ b/include/linux/phylink.h
+@@ -164,6 +164,7 @@ struct phylink_config {
+ 
+ void phylink_limit_mac_speed(struct phylink_config *config, u32 max_speed);
+ 
++int phylink_interface_max_speed(phy_interface_t interface);
+ /**
+  * struct phylink_mac_ops - MAC operations structure.
+  * @mac_get_caps: Get MAC capabilities for interface mode.
+diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+index d689ea0fa..643e00d68 100644
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -1292,6 +1292,7 @@ static inline void consume_skb(struct sk_buff *skb)
+ #endif
+ 
+ void __consume_stateless_skb(struct sk_buff *skb);
++void skb_recycle(struct sk_buff *skb);
+ void  __kfree_skb(struct sk_buff *skb);
+ 
+ void kfree_skb_partial(struct sk_buff *skb, bool head_stolen);
+
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 0a8628524..00c96814a 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -1529,6 +1529,32 @@ void napi_consume_skb(struct sk_buff *skb, int budget)
+ }
+ EXPORT_SYMBOL(napi_consume_skb);
+ 
++/**
++ * 	skb_recycle - clean up an skb for reuse
++ * 	@skb: buffer
++ *
++ * 	Recycles the skb to be reused as a receive buffer. This
++ * 	function does any necessary reference count dropping, and
++ * 	cleans up the skbuff as if it just came from __alloc_skb().
++ */
++void skb_recycle(struct sk_buff *skb)
++{
++	struct skb_shared_info *shinfo;
++	u8 head_frag = skb->head_frag;
++
++	skb_release_head_state(skb);
++
++	shinfo = skb_shinfo(skb);
++	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
++	atomic_set(&shinfo->dataref, 1);
++
++	memset(skb, 0, offsetof(struct sk_buff, tail));
++	skb->data = skb->head + NET_SKB_PAD;
++	skb->head_frag = head_frag;
++	skb_reset_tail_pointer(skb);
++}
++EXPORT_SYMBOL(skb_recycle);
++
+ /* Make sure a field is contained by headers group */
+ #define CHECK_SKB_FIELD(field) \
+ 	BUILD_BUG_ON(offsetof(struct sk_buff, field) !=		\
+-- 
+2.34.1
+

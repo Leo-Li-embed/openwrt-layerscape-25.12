@@ -1,0 +1,1 @@
+savedcmd_drivers/net/ethernet/freescale/sdk_fman/modules.order := {   cat drivers/net/ethernet/freescale/sdk_fman/etc/modules.order;   cat drivers/net/ethernet/freescale/sdk_fman/Peripherals/FM/modules.order;   cat drivers/net/ethernet/freescale/sdk_fman/src/modules.order; :; } > drivers/net/ethernet/freescale/sdk_fman/modules.order

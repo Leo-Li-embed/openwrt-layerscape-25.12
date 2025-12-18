@@ -1,0 +1,1 @@
+savedcmd_drivers/net/ethernet/freescale/sdk_fman/src/built-in.a := rm -f drivers/net/ethernet/freescale/sdk_fman/src/built-in.a;  printf "drivers/net/ethernet/freescale/sdk_fman/src/%s " system/built-in.a wrapper/built-in.a xx/built-in.a | xargs aarch64-linux-gnu-ar cDPrST drivers/net/ethernet/freescale/sdk_fman/src/built-in.a

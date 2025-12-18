@@ -2057,9 +2057,9 @@ Signed-off-by: Jakub Kicinski <kuba@kernel.org>
 +		break;
 +
 +	case PHY_INTERFACE_MODE_RGMII_TXID:
-+		val_txdly = RTL8211F_TX_DELAY;
-+		val_rxdly = 0;
-+		break;
++		//val_txdly = RTL8211F_TX_DELAY;
++		//val_rxdly = 0;
++		//break;
 +
 +	case PHY_INTERFACE_MODE_RGMII_ID:
 +		val_txdly = RTL8211F_TX_DELAY;
