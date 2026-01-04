@@ -14,6 +14,10 @@ move_config() {
 	fsl,ls1043a-rdb-sdboot | \
 	fsl,ls1046a-frwy-sdboot | \
 	fsl,ls1046a-rdb-sdboot | \
+	fsl,ls1043a-ag104a-sdboot | \
+	fsl,ls1043a-nh03-sdboot | \
+	fsl,ls1043a-ag1002a-sdboot | \
+	fsl,ls1043a-ag1002at-sdboot | \
 	fsl,ls1088a-rdb-sdboot)
 		if [ -b $BOOTPART ]; then
 			mkdir -p /boot

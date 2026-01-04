@@ -12,8 +12,8 @@
 #include "fsl-ls1043a.dtsi"
 
 / {
-	model = "LS1043A AG1002AT Board";
-	compatible = "fsl,ls1043a-ag1002at", "fsl,ls1043a";
+	model = "LS1043A AG1002A Board";
+	compatible = "fsl,ls1043a-ag1002a", "fsl,ls1043a";
 
 	aliases {
 		serial0 = &duart0;
@@ -44,7 +44,7 @@
 	};
 };
 
-&leds {
+&leds{
 	sys {
 		label = "sys";
 		gpios = <&gpio4 12 1>;
@@ -53,34 +53,44 @@
 
 	lte_0 {
 		label = "lte_0";
-		gpios = <&gpio1 30 1>;
+		gpios = <&gpio4 13 1>;
 	};
 
 	lte_1 {
 		label = "lte_1";
-		gpios = <&gpio4 10 1>;
+		gpios = <&gpio1 20 1>;
 	};
 
 	lte_2 {
 		label = "lte_2";
+		gpios = <&gpio1 21 1>;
+	};
+
+	wifi_24G {
+		label = "wifi_24g";
 		gpios = <&gpio4 11 1>;
 	};
 
+	wifi_5G {
+		label = "wifi_5g";
+		gpios = <&gpio4 10 1>;
+	};		
+			
 	cloud {
 		label = "cloud";
-		gpios = <&gpio4 13 1>;
-	};		
+		gpios = <&gpio1 16 0>;
+	};	
 
-	wifi {
-		label = "wifi";
-		gpios = <&gpio1 26 1>;
-	};				
+	lte {
+		label = "lte";
+		gpios = <&gpio2 10 1>;
+	};
 };
 
 &keys{
 	reset {
 		label = "reset";
-		gpios = <&gpio1 27 1>;
+		gpios = <&gpio2 27 1>;
 		linux,code = <0x198>;
 	};
 };
@@ -217,27 +227,26 @@
 	};
 
 	mdio@fc000 {
-		rgmii_phy1: ethernet-phy@1 {
-			reg = <0x1>;
-		};
-
-		rgmii_phy2: ethernet-phy@3 {
-			reg = <0x3>;
-		};
-
-		sgmii_phy1: ethernet-phy@4 {
-			reg = <0x4>;
-			max-speed = <1000>;
+		sgmii_phy1: ethernet-phy@1 {
+			reg = <0x16>;
 		};
 
 		sgmii_phy2: ethernet-phy@2 {
-			reg = <0x2>;
-			max-speed = <1000>;
+			reg = <0x15>;
 		};
 
-		sgmii_phy3: ethernet-phy@6 {
-			reg = <0x6>;
-			max-speed = <1000>;
+		sgmii_phy3: ethernet-phy@3 {
+			reg = <0x17>;
+		};	
+
+		rgmii_phy2: ethernet-phy@4 {
+			reg = <0x1>;
+		};		
+	};
+
+	mdio@fd000 {
+		rgmii_phy1: ethernet-phy@5 {
+			reg = <0x1>;
 		};
 	};
 };

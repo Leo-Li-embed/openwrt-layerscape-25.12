@@ -184,6 +184,82 @@ define Device/fsl_ls1043a-rdb-sdboot
 endef
 TARGET_DEVICES += fsl_ls1043a-rdb-sdboot
 
+define Device/fsl_ls1043a-ag104a-qspi-boot-emmc
+  $(Device/rework-sdcard-images)
+  $(Device/fsl-sdboot)
+  DEVICE_VENDOR := NXP
+  DEVICE_MODEL := LS1043A-AG104A
+  DEVICE_VARIANT := QSPI Boot EMMC
+  DEVICE_PACKAGES += \
+    kmod-ahci-qoriq \
+    kmod-hwmon-ina2xx \
+    kmod-hwmon-lm90
+  DEVICE_DTS := fsl-ls1043a-ag104a-sdk
+  IMAGE/sdcard.img.gz := \
+    ls-clean | \
+    ls-append-sdhead $(1) | pad-to 16M | \
+    ls-append-kernel | pad-to $(LS_SD_ROOTFSPART_OFFSET)M | \
+    append-rootfs | pad-to $(LS_SD_IMAGE_SIZE)M | gzip
+endef
+TARGET_DEVICES += fsl_ls1043a-ag104a-qspi-boot-emmc
+
+define Device/fsl_ls1043a-ag1002at-qspi-boot-emmc
+  $(Device/rework-sdcard-images)
+  $(Device/fsl-sdboot)
+  DEVICE_VENDOR := NXP
+  DEVICE_MODEL := LS1043A-AG1002AT
+  DEVICE_VARIANT := QSPI Boot EMMC
+  DEVICE_PACKAGES += \
+    kmod-ahci-qoriq \
+    kmod-hwmon-ina2xx \
+    kmod-hwmon-lm90
+  DEVICE_DTS := fsl-ls1043a-ag1002at-sdk
+  IMAGE/sdcard.img.gz := \
+    ls-clean | \
+    ls-append-sdhead $(1) | pad-to 16M | \
+    ls-append-kernel | pad-to $(LS_SD_ROOTFSPART_OFFSET)M | \
+    append-rootfs | pad-to $(LS_SD_IMAGE_SIZE)M | gzip
+endef
+TARGET_DEVICES += fsl_ls1043a-ag1002at-qspi-boot-emmc
+
+define Device/fsl_ls1043a-ag1002a-qspi-boot-emmc
+  $(Device/rework-sdcard-images)
+  $(Device/fsl-sdboot)
+  DEVICE_VENDOR := NXP
+  DEVICE_MODEL := LS1043A-AG1002A
+  DEVICE_VARIANT := QSPI Boot EMMC
+  DEVICE_PACKAGES += \
+    kmod-ahci-qoriq \
+    kmod-hwmon-ina2xx \
+    kmod-hwmon-lm90
+  DEVICE_DTS := fsl-ls1043a-ag1002a-sdk
+  IMAGE/sdcard.img.gz := \
+    ls-clean | \
+    ls-append-sdhead $(1) | pad-to 16M | \
+    ls-append-kernel | pad-to $(LS_SD_ROOTFSPART_OFFSET)M | \
+    append-rootfs | pad-to $(LS_SD_IMAGE_SIZE)M | gzip
+endef
+TARGET_DEVICES += fsl_ls1043a-ag1002a-qspi-boot-emmc
+
+define Device/fsl_ls1043a-nh03-qspi-boot-emmc
+  $(Device/rework-sdcard-images)
+  $(Device/fsl-sdboot)
+  DEVICE_VENDOR := NXP
+  DEVICE_MODEL := LS1043A-NH03
+  DEVICE_VARIANT := QSPI Boot EMMC
+  DEVICE_PACKAGES += \
+    kmod-ahci-qoriq \
+    kmod-hwmon-ina2xx \
+    kmod-hwmon-lm90
+  DEVICE_DTS := fsl-ls1043a-nh03-sdk
+  IMAGE/sdcard.img.gz := \
+    ls-clean | \
+    ls-append-sdhead $(1) | pad-to 16M | \
+    ls-append-kernel | pad-to $(LS_SD_ROOTFSPART_OFFSET)M | \
+    append-rootfs | pad-to $(LS_SD_IMAGE_SIZE)M | gzip
+endef
+TARGET_DEVICES += fsl_ls1043a-nh03-qspi-boot-emmc
+
 define Device/fsl_ls1046a-frwy
   DEVICE_VENDOR := NXP
   DEVICE_MODEL := FRWY-LS1046A

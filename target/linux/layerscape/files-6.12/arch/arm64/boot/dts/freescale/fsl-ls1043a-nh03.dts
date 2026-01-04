@@ -12,8 +12,8 @@
 #include "fsl-ls1043a.dtsi"
 
 / {
-	model = "LS1043A AG1002AT Board";
-	compatible = "fsl,ls1043a-ag1002at", "fsl,ls1043a";
+	model = "LS1043A NH03 Board";
+	compatible = "fsl,ls1043a-nh03", "fsl,ls1043a";
 
 	aliases {
 		serial0 = &duart0;
@@ -38,49 +38,93 @@
 &i2c0 {
 	status = "okay";
 
-	rtc@32 {
-		compatible = "epson,rx8025";
-		reg = <0x32>;
+	gpio20: gpio@20 {
+		compatible = "nxp,pca9555";
+		reg = <0x20>;
+		pinctrl-names = "default";
+		gpio-controller;
+		#gpio-cells = <0x02>;
+	};
+};
+
+&i2c1 {
+	status = "okay";
+	g788@4c {
+		compatible = "gmt,g788";
+		reg = <0x4c>;
+	};
+};
+
+&i2c2 {
+	status = "okay";
+	rtc@51 {
+		compatible = "nxp,pcf8563";
+		reg = <0x51>;
 	};
 };
 
 &leds {
-	sys {
-		label = "sys";
-		gpios = <&gpio4 12 1>;
-		linux,default-trigger = "timer";
+	compatible = "gpio-leds";
+
+	led@1 {
+		gpios = <&gpio1 23 1>;
+		label = "led_cloud";
+		default-state = "off";
 	};
 
-	lte_0 {
-		label = "lte_0";
+	led@2 {
+		gpios = <&gpio1 24 1>;
+		label = "led_run";
+		default-state = "off";
+	};
+
+	led@3 {
+		gpios = <&gpio1 27 1>;
+		label = "led_wifi1";
+		default-state = "off";
+	};
+
+	led@4 {
+		gpios = <&gpio1 28 1>;
+		label = "led_wifi2";
+		default-state = "off";
+	};
+
+	led@5 {
+		gpios = <&gpio1 29 1>;
+		label = "led_4g";
+		default-state = "off";
+	};
+
+	led@6 {
 		gpios = <&gpio1 30 1>;
-	};
-
-	lte_1 {
-		label = "lte_1";
-		gpios = <&gpio4 10 1>;
+		label = "led_5g";
+		default-state = "off";
 	};
 
 	lte_2 {
+		gpios = <&gpio20 10 1>;
 		label = "lte_2";
-		gpios = <&gpio4 11 1>;
+		default-state = "off";
 	};
 
-	cloud {
-		label = "cloud";
-		gpios = <&gpio4 13 1>;
-	};		
+	lte_1 {
+		gpios = <&gpio20 11 1>;
+		label = "lte_1";
+		default-state = "off";
+	};
 
-	wifi {
-		label = "wifi";
-		gpios = <&gpio1 26 1>;
-	};				
+	lte_0 {
+		gpios = <&gpio20 12 1>;
+		label = "lte_0";
+		default-state = "off";
+	};
 };
 
 &keys{
 	reset {
 		label = "reset";
-		gpios = <&gpio1 27 1>;
+		gpios = <&gpio1 10 1>;
 		linux,code = <0x198>;
 	};
 };
@@ -191,9 +235,15 @@
 #include "fsl-ls1043-post.dtsi"
 
 &fman0 {
+
+	ethernet@e0000 {
+		phy-handle = <&qsgmii_phy1>;
+		phy-connection-type = "qsgmii";
+	};
+
 	ethernet@e2000 {
-		phy-handle = <&sgmii_phy1>;
-		phy-connection-type = "sgmii";
+		phy-handle = <&qsgmii_phy2>;
+		phy-connection-type = "qsgmii";
 	};
 
 	ethernet@e4000 {
@@ -207,13 +257,13 @@
 	};
 
 	ethernet@e8000 {
-		phy-handle = <&sgmii_phy2>;
-		phy-connection-type = "sgmii";
+		phy-handle = <&qsgmii_phy3>;
+		phy-connection-type = "qsgmii";
 	};
 
-	ethernet@f0000 { 
-		phy-handle = <&sgmii_phy3>;
-		phy-connection-type = "sgmii";
+	ethernet@ea000 { 
+		phy-handle = <&qsgmii_phy4>;
+		phy-connection-type = "qsgmii";
 	};
 
 	mdio@fc000 {
@@ -224,19 +274,26 @@
 		rgmii_phy2: ethernet-phy@3 {
 			reg = <0x3>;
 		};
+	};
 
-		sgmii_phy1: ethernet-phy@4 {
+	mdio@fd000 {
+		qsgmii_phy1: ethernet-phy@4 {
 			reg = <0x4>;
 			max-speed = <1000>;
 		};
 
-		sgmii_phy2: ethernet-phy@2 {
-			reg = <0x2>;
+		qsgmii_phy2: ethernet-phy@5 {
+			reg = <0x5>;
 			max-speed = <1000>;
 		};
 
-		sgmii_phy3: ethernet-phy@6 {
+		qsgmii_phy3: ethernet-phy@6 {
 			reg = <0x6>;
+			max-speed = <1000>;
+		};
+
+		qsgmii_phy4: ethernet-phy@7 {
+			reg = <0x7>;
 			max-speed = <1000>;
 		};
 	};

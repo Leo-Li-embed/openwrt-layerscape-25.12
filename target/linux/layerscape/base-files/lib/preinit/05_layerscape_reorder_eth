@@ -1,0 +1,56 @@
+reorder_layerscape_interfaces() {
+	if [ ! -f /tmp/sysinfo/board_name ]; then
+		echo "No board name found, not doing reorder_layerscape_interfaces"
+		return 0
+	fi
+
+	board=$(cat /tmp/sysinfo/board_name)
+	case "$board" in
+	"fsl,ls1043a-ag1002at-sdboot" | "fsl,ls1043a-ag104a-sdboot")
+		# Reorder ethernet interfaces to match the physical order
+        ip link set eth3 name iface0
+        ip link set eth0 name iface1
+        ip link set eth4 name iface2
+        ip link set eth2 name iface3
+        ip link set eth1 name iface4
+
+		ip link set iface0 name eth0
+		ip link set iface1 name eth1
+		ip link set iface2 name eth2
+		ip link set iface3 name eth3
+		ip link set iface4 name eth4
+		;;
+	"fsl,ls1043a-ag1002a-sdboot")
+        ip link set eth1 name iface0
+        ip link set eth2 name iface1
+        ip link set eth4 name iface2
+        ip link set eth0 name iface3
+        ip link set eth3 name iface4
+
+		ip link set iface0 name eth0
+		ip link set iface1 name eth1
+		ip link set iface2 name eth2
+		ip link set iface3 name eth3
+		ip link set iface4 name eth4
+		;;
+	"fsl,ls1043a-nh03-sdboot")
+		ip link set eth2 name iface0
+        ip link set eth3 name iface1
+        ip link set eth0 name iface2
+        ip link set eth1 name iface3
+        ip link set eth4 name iface4
+		ip link set eth5 name iface5
+		ip link set iface0 name eth0
+		ip link set iface1 name eth1
+		ip link set iface2 name eth2
+		ip link set iface3 name eth3
+		ip link set iface4 name eth4
+		ip link set iface5 name eth5
+		;;
+	default)
+		echo "Unknown board $board"
+		;;
+	esac
+}
+
+boot_hook_add preinit_main reorder_layerscape_interfaces
