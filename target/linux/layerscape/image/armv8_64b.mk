@@ -184,7 +184,7 @@ define Device/fsl_ls1043a-rdb-sdboot
 endef
 TARGET_DEVICES += fsl_ls1043a-rdb-sdboot
 
-define Device/fsl_ls1043a-ag104a-qspi-boot-emmc
+define Device/fsl_ls1043a-ag104a-sdboot
   $(Device/rework-sdcard-images)
   $(Device/fsl-sdboot)
   DEVICE_VENDOR := NXP
@@ -201,9 +201,9 @@ define Device/fsl_ls1043a-ag104a-qspi-boot-emmc
     ls-append-kernel | pad-to $(LS_SD_ROOTFSPART_OFFSET)M | \
     append-rootfs | pad-to $(LS_SD_IMAGE_SIZE)M | gzip
 endef
-TARGET_DEVICES += fsl_ls1043a-ag104a-qspi-boot-emmc
+TARGET_DEVICES += fsl_ls1043a-ag104a-sdboot
 
-define Device/fsl_ls1043a-ag1002at-qspi-boot-emmc
+define Device/fsl_ls1043a-ag1002at-sdboot
   $(Device/rework-sdcard-images)
   $(Device/fsl-sdboot)
   DEVICE_VENDOR := NXP
@@ -220,9 +220,9 @@ define Device/fsl_ls1043a-ag1002at-qspi-boot-emmc
     ls-append-kernel | pad-to $(LS_SD_ROOTFSPART_OFFSET)M | \
     append-rootfs | pad-to $(LS_SD_IMAGE_SIZE)M | gzip
 endef
-TARGET_DEVICES += fsl_ls1043a-ag1002at-qspi-boot-emmc
+TARGET_DEVICES += fsl_ls1043a-ag1002at-sdboot
 
-define Device/fsl_ls1043a-ag1002a-qspi-boot-emmc
+define Device/fsl_ls1043a-ag1002a-sdboot
   $(Device/rework-sdcard-images)
   $(Device/fsl-sdboot)
   DEVICE_VENDOR := NXP
@@ -239,9 +239,9 @@ define Device/fsl_ls1043a-ag1002a-qspi-boot-emmc
     ls-append-kernel | pad-to $(LS_SD_ROOTFSPART_OFFSET)M | \
     append-rootfs | pad-to $(LS_SD_IMAGE_SIZE)M | gzip
 endef
-TARGET_DEVICES += fsl_ls1043a-ag1002a-qspi-boot-emmc
+TARGET_DEVICES += fsl_ls1043a-ag1002a-sdboot
 
-define Device/fsl_ls1043a-nh03-qspi-boot-emmc
+define Device/fsl_ls1043a-nh03-sdboot
   $(Device/rework-sdcard-images)
   $(Device/fsl-sdboot)
   DEVICE_VENDOR := NXP
@@ -258,7 +258,7 @@ define Device/fsl_ls1043a-nh03-qspi-boot-emmc
     ls-append-kernel | pad-to $(LS_SD_ROOTFSPART_OFFSET)M | \
     append-rootfs | pad-to $(LS_SD_IMAGE_SIZE)M | gzip
 endef
-TARGET_DEVICES += fsl_ls1043a-nh03-qspi-boot-emmc
+TARGET_DEVICES += fsl_ls1043a-nh03-sdboot
 
 define Device/fsl_ls1046a-frwy
   DEVICE_VENDOR := NXP
