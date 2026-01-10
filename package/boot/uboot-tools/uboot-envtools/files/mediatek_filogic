@@ -28,6 +28,7 @@ asus,zenwifi-bt8-ubootmod|\
 cmcc,a10-ubootmod|\
 comfast,cf-wr632ax-ubootmod|\
 cudy,tr3000-v1-ubootmod|\
+cudy,wbr3000uax-v1-ubootmod|\
 h3c,magic-nx30-pro|\
 imou,hx21|\
 jcg,q30-pro|\
@@ -41,6 +42,7 @@ nokia,ea0326gmp|\
 openwrt,one|\
 qihoo,360t7|\
 routerich,ax3000-ubootmod|\
+routerich,be7200|\
 snr,snr-cpe-ax2|\
 tplink,tl-xdr4288|\
 tplink,tl-xdr6086|\
