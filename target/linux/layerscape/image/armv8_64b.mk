@@ -96,6 +96,23 @@ define Device/fsl_ls1012a-frwy-sdboot
 endef
 TARGET_DEVICES += fsl_ls1012a-frwy-sdboot
 
+define Device/fsl_ls1012a-ag101a-sdboot
+  $(Device/rework-sdcard-images)
+  $(Device/fsl-sdboot)
+  DEVICE_VENDOR := NXP
+  DEVICE_MODEL := AG101A-LS1012A
+  DEVICE_PACKAGES += \
+    layerscape-ppfe \
+    kmod-ppfe
+  DEVICE_DTS := fsl-ls1012a-ag101a
+  IMAGE/sdcard.img.gz := \
+    ls-clean | \
+    ls-append-sdhead $(1) | pad-to 16M | \
+    ls-append-kernel | pad-to $(LS_SD_ROOTFSPART_OFFSET)M | \
+    append-rootfs | pad-to $(LS_SD_IMAGE_SIZE)M | gzip
+endef
+TARGET_DEVICES += fsl_ls1012a-ag101a-sdboot
+
 define Device/fsl_ls1028a-rdb
   DEVICE_VENDOR := NXP
   DEVICE_MODEL := LS1028A-RDB

@@ -1,0 +1,102 @@
+From 7f24a564c502fe365736f27a9c76a4065da21fd0 Mon Sep 17 00:00:00 2001
+From: mycode <li_cloud6630@qq.com>
+Date: Thu, 15 Jan 2026 01:27:30 +0000
+Subject: [PATCH] Use slab_build_skb() instead of build_skb.
+
+build_skb cause kernel crash when ppfe up. Like this:
+[   37.659288] ------------[ cut here ]------------
+[   37.663982] Use slab_build_skb() instead
+[   37.664076] WARNING: CPU: 0 PID: 2216 at net/core/skbuff.c:465 __build_skb_around+0xd8/0xe0
+[   37.676388] Modules linked in: ath9k(O) ath9k_common(O) qcserial pppoe ppp_async option ath9k_hw(O) ath11k_pci(O) ath11k(O) ath10k_pci(O) ath10k_core(O) ath(O) usb_wwan pppox ppp_generic pl2303 nft_fib_inet mac80211(O) ftdi_sio cfg80211(O) cdc_mbim usbserial usblp slhc sierra_net rtc_pcf2127 rtc_ds1307 rndis_host qrtr_mhi qrtr qmi_wwan qmi_helpers(O) plusb nft_reject_ipv6 nft_reject_ipv4 nft_reject_inet nft_reject nft_redir nft_quota nft_numgen nft_log nft_limit nft_hash nft_flow_offload nft_fib_ipv6 nft_fib_ipv4 nft_fib nf_reject_ipv4 nf_flow_table_inet nf_flow_table mhi lm90 lan78xx ina2xx huawei_cdc_ncm crc_ccitt compat(O) cdc_wdm cdc_subset cdc_ncm cdc_ether cdc_eem cdc_acm ntfs3 ledtrig_gpio ip_gre gre pfe(C) nls_utf8 algif_skcipher algif_rng algif_hash algif_aead af_alg sha512_arm64 michael_mic cmac ccm leds_pca955x fsl_mph_dr_of ehci_fsl xfs reiserfs f2fs button_hotplug(O) microchip mxl_gpy polynomial crc32_generic
+[   37.758650] CPU: 0 UID: 0 PID: 2216 Comm: urandom_seed Tainted: G         C O       6.12.63 #0
+[   37.767290] Tainted: [C]=CRAP, [O]=OOT_MODULE
+[   37.771653] Hardware name: Future AG101A Board (DT)
+[   37.776541] pstate: 80000005 (Nzcv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[   37.783522] pc : __build_skb_around+0xd8/0xe0
+[   37.787890] lr : __build_skb_around+0xd8/0xe0
+[   37.792258] sp : ffff800080003cf0
+[   37.795577] x29: ffff800080003cf0 x28: ffff0a5b04df09c0 x27: 0000000000000000
+[   37.802741] x26: ffff0a5b04df09c8 x25: 0000000000000000 x24: ffff0a5b04df0000
+[   37.809905] x23: 0000000000000000 x22: ffff0a5b04df09c0 x21: ffff0a5b04254000
+[   37.817069] x20: 0000000000000000 x19: ffff0a5b02977f00 x18: 0000000000000028
+[   37.824232] x17: ffff66b6a0c0e000 x16: ffffa3a499661e08 x15: fffffffffffe69c8
+[   37.831397] x14: fffffffffffc69c7 x13: 64616574736e6920 x12: ffffa3a49a0b5b38
+[   37.838560] x11: 00000000000001bd x10: ffffa3a49a0b5b38 x9 : fffffffffffe69c8
+[   37.845725] x8 : fffffffffffe69a0 x7 : ffffa3a49a0b5b38 x6 : 00000000000001be
+[   37.852888] x5 : ffff0a5b3abe7348 x4 : 0000000000000000 x3 : 0000000000000027
+[   37.860051] x2 : ffff0a5b3abe7350 x1 : ffff0a5b06dcb240 x0 : 0000000000000100
+[   37.867216] Call trace:
+[   37.869665]  __build_skb_around+0xd8/0xe0
+[   37.873686]  build_skb+0x50/0xb8
+[   37.876924]  pfe_eth_mdio_reset+0x280/0x2340 [pfe]
+[   37.881738]  pfe_eth_mdio_reset+0x4cc/0x2340 [pfe]
+[   37.886547]  __napi_poll+0x38/0x180
+[   37.890045]  net_rx_action+0x14c/0x2a4
+[   37.893803]  handle_softirqs+0x100/0x240
+[   37.897739]  __do_softirq+0x14/0x20
+[   37.901236]  ____do_softirq+0x10/0x20
+[   37.904908]  call_on_irq_stack+0x30/0x48
+[   37.908841]  do_softirq_own_stack+0x1c/0x40
+[   37.913034]  irq_exit_rcu+0x88/0xc0
+[   37.916531]  el1_interrupt+0x38/0x74
+[   37.920117]  el1h_64_irq_handler+0x18/0x24
+[   37.924223]  el1h_64_irq+0x64/0x68
+[   37.927632]  lzma_main+0x870/0x910
+[   37.931047]  xz_dec_lzma2_run+0x6b8/0x850
+[   37.935069]  xz_dec_run+0x488/0x99c
+[   37.938568]  squashfs_xz_uncompress+0xd8/0x1f0
+[   37.943030]  squashfs_decompress+0x64/0xbc
+[   37.947141]  squashfs_read_data+0xc4/0x474
+[   37.951252]  squashfs_cache_get+0x11c/0x2e4
+[   37.955449]  squashfs_get_fragment+0x20/0x2c
+[   37.959733]  squashfs_readahead+0x28c/0x7a0
+[   37.963930]  read_pages+0x58/0x2d0
+[   37.967345]  page_cache_ra_unbounded+0x154/0x230
+[   37.971976]  page_cache_ra_order+0xc0/0x390
+[   37.976172]  page_cache_sync_ra+0x158/0x250
+[   37.980368]  filemap_get_pages+0xc8/0x64c
+[   37.984386]  filemap_read+0xb4/0x340
+[   37.987969]  generic_file_read_iter+0x48/0x13c
+[   37.992423]  do_iter_readv_writev+0x14c/0x18c
+[   37.996792]  vfs_iter_read+0x68/0x180
+[   38.000464]  backing_file_read_iter+0x174/0x204
+[   38.005012]  ovl_read_iter+0x94/0xa8
+[   38.008600]  vfs_read+0x1ec/0x2a0
+[   38.011925]  ksys_read+0x5c/0xe0
+[   38.015160]  __arm64_sys_read+0x1c/0x28
+[   38.019006]  invoke_syscall+0x48/0x104
+[   38.022769]  el0_svc_common.constprop.0+0x48/0xe8
+[   38.027487]  do_el0_svc+0x1c/0x34
+[   38.030812]  el0_svc+0x30/0xf8
+[   38.033875]  el0t_64_sync_handler+0x120/0x12c
+[   38.038243]  el0t_64_sync+0x190/0x194
+[   38.041915] ---[ end trace 0000000000000000 ]---
+---
+ drivers/staging/fsl_ppfe/pfe_eth.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/fsl_ppfe/pfe_eth.c b/drivers/staging/fsl_ppfe/pfe_eth.c
+index 6ac320b..8d5d000 100644
+--- a/drivers/staging/fsl_ppfe/pfe_eth.c
++++ b/drivers/staging/fsl_ppfe/pfe_eth.c
+@@ -2130,7 +2130,7 @@ static struct sk_buff *pfe_eth_rx_skb(struct net_device *ndev,
+ 
+ 		/* First frag */
+ 		if (desc_ctrl & CL_DESC_FIRST) {
+-			skb = build_skb(buf_addr, 0);
++			skb = slab_build_skb(buf_addr);
+ 			if (unlikely(!skb))
+ 				goto pkt_drop;
+ 
+@@ -2152,7 +2152,7 @@ static struct sk_buff *pfe_eth_rx_skb(struct net_device *ndev,
+ 				goto pkt_drop;
+ 			}
+ 
+-			skb_frag = build_skb(buf_addr, 0);
++			skb_frag = slab_build_skb(buf_addr);
+ 
+ 			if (unlikely(!skb_frag)) {
+ 				kfree(buf_addr);
+-- 
+2.34.1
+
